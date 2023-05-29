@@ -157,7 +157,7 @@ HDC     hdcMemory;
 HBITMAP bmapMemory;
 HPS     hpsMemory;
 
-DRIVDATA    drvdata = {44L, 0L, "DISPLAY", 0L};
+DRIVDATA    drvdata[] = {{44, 0, "DISPLAY", {0}}};
 
   struct {
     PSZ   address;
@@ -171,7 +171,7 @@ DRIVDATA    drvdata = {44L, 0L, "DISPLAY", 0L};
     PSZ   network_params;
          }
 
-    dcdatablk = {0L, "DISPLAY", 0L, 0L, 0L, 0L, 0L, 0L, 0L};
+    dcdatablk = {0L, (unsigned char *) "DISPLAY", 0L, 0L, 0L, 0L, 0L, 0L, 0L};
 
 BITMAPINFOHEADER2 bmpMemory;           /* bitmap information header for
                                           create bitmap API                   */
@@ -450,7 +450,7 @@ VOID ClipbrdHelp(HWND hwnd, USHORT HelpId)
     */
    if (!WinLoadString(habMain, (HMODULE)0L, HelpId, (SHORT)CCHMAXSTRING,
                           (PSZ)szTemp))
-      ReportAPIError("Error loading Help String");
+      ReportAPIError((PSZ) "Error loading Help String");
 
    /*
     * Display the help string.
@@ -711,7 +711,7 @@ HBITMAP GetBitmap()
    } /* endif */
 
    if ( (tptr = WinQuerySysPointer(HWND_DESKTOP, SPTR_WAIT, FALSE)) == 0 )
-      ReportAPIError("Failed to get System pointer handle");
+      ReportAPIError((PSZ) "Failed to get System pointer handle");
    WinSetPointer(HWND_DESKTOP, tptr);
   /*
    * It is a bounding rectangle, so we only want what is inside.
@@ -726,7 +726,7 @@ HBITMAP GetBitmap()
                  (PDEVOPENDATA)&dcdatablk,
                  (HDC)0L
                  );
-   if (hdc == 0) ReportAPIError("DevOpenDC Failure");
+   if (hdc == 0) ReportAPIError((PSZ) "DevOpenDC Failure");
 
    bmpMemory.cbFix           = sizeof(bmpMemory);
    bmpMemory.cx              = (USHORT)sizlWork.cx;
@@ -749,7 +749,7 @@ HBITMAP GetBitmap()
    hps = GpiCreatePS(habMain, hdc, &sizlWork, GPIA_ASSOC | PU_PELS);
    if (hps == 0)
    {
-     ReportAPIError("GpiCreatePS Failure");
+     ReportAPIError((PSZ) "GpiCreatePS Failure");
    }
 
    bmap = GpiCreateBitmap(hps,
@@ -760,7 +760,7 @@ HBITMAP GetBitmap()
             );
    if (bmap ==0)
    {
-      ReportAPIError("GpiCreateBitmap Failure");
+      ReportAPIError( (PSZ) "GpiCreateBitmap Failure");
    }
 
    GpiSetBitmap(hps, bmap);
@@ -864,7 +864,7 @@ BOOL Initialize()
                                  &hwndClient
                                  );
 
-   WinSetWindowText(hwndFrame, "CLIPBOARD SAMPLE");
+   WinSetWindowText(hwndFrame, (PCSZ) "CLIPBOARD SAMPLE");
 
    WinSetPointer(HWND_DESKTOP,
                 WinQuerySysPointer(HWND_DESKTOP, SPTR_ARROW, FALSE));
@@ -1039,7 +1039,7 @@ VOID MouseButtonDown(HWND hwnd, MPARAM mp1)
 VOID PaintRoutine(HWND hwnd)
 {
    RECTL   rclUpdt;
-   BOOL    RC;
+   // BOOL    RC;
      /*
       * If we are in a position to update the window, get the invalidated
       * rectangle and use this to copy from the memory bit map to the screen,
@@ -1073,7 +1073,7 @@ VOID PaintRoutine(HWND hwnd)
                  ROP_SRCCOPY,
                  BBO_IGNORE
                 );
-       RC = WinValidateRect(hwnd, &rclUpdt, FALSE);
+       // RC = WinValidateRect(hwnd, &rclUpdt, FALSE);
        if (!WinIsRectEmpty(habMain, &tiStruct.rclTrack))
            DrawRect();
    }
@@ -1445,8 +1445,8 @@ VOID ReportAPIError(PSZ what)
    PSZ       pszOffSet;
    char      ErrorMsg[CCHMAXSTRING];                          /* error text buffer */
 
-   pszErrMsg = &szDefErrMesg[0];               /* set default in case no err */
-   strcpy(ErrorMsg, what);                     /* init message string        */
+   pszErrMsg = (PSZ) &szDefErrMesg[0];               /* set default in case no err */
+   strcpy(ErrorMsg, (const char * restrict) what);                     /* init message string        */
    strcat(ErrorMsg, "\n\n");                   /* double space for neatness  */
    if ((pErrInfoBlk = WinGetErrorInfo(habMain)) != (PERRINFO)NULL)
    {
@@ -1455,7 +1455,7 @@ VOID ReportAPIError(PSZ what)
 
        WinFreeErrorInfo(pErrInfoBlk);
    } /*  if ((pErrInfoBlk = WinGetErrorInfo(hab)) != (PCH)NULL) */
-   strcat(ErrorMsg, pszErrMsg);                 /* combine specific text     */
+   strcat(ErrorMsg, (const char * restrict) pszErrMsg);                 /* combine specific text     */
    WinMessageBox(HWND_DESKTOP,                  /* parent window is desk top */
                  hwndFrame,                     /* owner window is our frame */
                 (PSZ)&ErrorMsg[0],              /* text for message          */
@@ -1533,7 +1533,7 @@ VOID  HelpProductInfo(HWND hwndMain)
                              0,
                              IDD_PRODUCTINFO,
                              (PVOID)NULL))
-      ReportAPIError("Can't start dialog");
+      ReportAPIError((PSZ) "Can't start dialog");
    return;
 }   /*  End of HelpProductInfo   */
 
@@ -1559,7 +1559,7 @@ VOID SetSysMenu(HWND hDlg)
    HWND     hSysMenu;
    MENUITEM Mi;
    SHORT    Pos;
-   SHORT    Id;
+   LONG     Id;
    SHORT    cItems;
 
    /*
@@ -1569,7 +1569,7 @@ VOID SetSysMenu(HWND hDlg)
    WinSendMsg( hSysMenu, MM_QUERYITEM
              , MPFROM2SHORT(SC_SYSMENU, FALSE), MPFROMP((PCH) & Mi));
    Pos = 0;
-   cItems = (SHORT)WinSendMsg( Mi.hwndSubMenu, MM_QUERYITEMCOUNT,
+   cItems = (LONG)WinSendMsg( Mi.hwndSubMenu, MM_QUERYITEMCOUNT,
                                (MPARAM)NULL, (MPARAM)NULL);
    while (cItems--)
    {

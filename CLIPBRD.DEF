@@ -7,14 +7,12 @@
 ;  Different STACKSIZE used.  ( 8192 bytes )
 
 
-NAME    clipbrd  WINDOWAPI
+NAME    CLIPBRD  WINDOWAPI
 
-DESCRIPTION 'Clipboard Sample'
+DESCRIPTION     '@#OS2World:5.00#@##1## 29 May 2023 20:00:00     ARCAOS-507::::::v5.00@@Cliboard PM Sample'
 
 DATA    MULTIPLE
 
 STACKSIZE 8192
-HEAPSIZE  4096
 
-PROTMODE
 
